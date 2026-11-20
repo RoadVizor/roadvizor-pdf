@@ -91,22 +91,22 @@ public class RelatorioPdf {
                 soma = 0.0,
                 limite = 80.0;
 
-        int acima = 0,
-                qtd = 0;
+        int logAcima = 0,
+                qtdTotaLog = 0;
 
         for (JsonNode res : historico) {
             double uso = res.path("uso").asDouble(0);
-            if (qtd == 0 && res.hasNonNull("limite_max")) limite = res.get("limite_max").asDouble(80);
+            if (qtdTotaLog == 0 && res.hasNonNull("limite_max")) limite = res.get("limite_max").asDouble(80);
             pico = Math.max(pico, uso);
             soma += uso;
-            qtd++;
+            qtdTotaLog++;
         }
 
         for (JsonNode res : historico) {
-            if (res.path("uso").asDouble(0) > limite) acima++;
+            if (res.path("uso").asDouble(0) > limite) logAcima++;
         }
 
-        double media = qtd == 0 ? 0 : soma / qtd;
+        double media = qtdTotaLog == 0 ? 0 : soma / qtdTotaLog;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document doc = new Document(PageSize.A4, 40, 40, 50, 40);
@@ -119,10 +119,10 @@ public class RelatorioPdf {
         doc.add(new Paragraph(" "));
 
         doc.add(new Paragraph("Resumo dos últimos 7 dias", F_SUB));
-        String resumo = qtd == 0
+        String resumo = qtdTotaLog == 0
                 ? "Sem leituras de uso nos últimos 7 dias para este servidor."
                 : String.format("Pico de %.0f%%, média de %.0f%% e %d de %d dia(s) com pico acima do limite de %.0f%%.",
-                pico, media, acima, qtd, limite);
+                pico, media, logAcima, qtdTotaLog, limite);
         doc.add(new Paragraph(resumo, F_TEXTO));
         doc.add(new Paragraph(" "));
 
