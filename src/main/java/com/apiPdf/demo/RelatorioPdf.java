@@ -27,7 +27,8 @@ import java.util.Map;
 
 public class RelatorioPdf {
 
-    private static final String BASE_URL = "http://localhost:3333/api/log";
+    private static final String BASE_URL =
+            System.getenv().getOrDefault("NODE_API_URL", "http://localhost:3333/api/log");
     private static final HttpClient HTTP = HttpClient.newHttpClient();
     private static final ObjectMapper JSON = new ObjectMapper();
 
