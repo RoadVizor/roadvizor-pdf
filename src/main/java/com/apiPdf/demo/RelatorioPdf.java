@@ -24,6 +24,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 public class RelatorioPdf {
 
@@ -32,7 +35,7 @@ public class RelatorioPdf {
     private static final HttpClient HTTP = HttpClient.newHttpClient();
     private static final ObjectMapper JSON = new ObjectMapper();
 
-    private static final Color AZUL = new Color(14, 90, 167);
+    private static final Color AZUL = new Color(6, 101, 0);
     private static final Color CINZA = new Color(240, 243, 246);
     private static final Font F_TITULO = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20, AZUL);
     private static final Font F_SUB = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13, Color.DARK_GRAY);
@@ -78,6 +81,22 @@ public class RelatorioPdf {
             case "Normal" -> new Color(40, 199, 111);
             default -> new Color(107, 119, 133);
         };
+    }
+
+    private static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
+    private static final DateTimeFormatter FORMATO_DATA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    static String formatarDataHora(String valor) {
+        if (valor == null || valor.isBlank()) return "--";
+        try {
+            return Instant.parse(valor).atZone(FUSO).format(FORMATO_DATA_HORA);
+        } catch (Exception e1) {
+            try {
+                return OffsetDateTime.parse(valor).atZoneSameInstant(FUSO).format(FORMATO_DATA_HORA);
+            } catch (Exception e2) {
+                return valor;
+            }
+        }
     }
 
     public static byte[] gerar(String servidorId, String componenteId,
@@ -150,8 +169,8 @@ public class RelatorioPdf {
 
         for (JsonNode log : logs) {
             String status = statusDe(log.path("status").asText());
-            celula(tituloLogs, log.path("data_hora").asText("--"));
 
+            celula(tituloLogs, formatarDataHora(log.path("data_hora").asText(null)));
             PdfPCell cedula = new PdfPCell(new Phrase(status,
                     FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, corStatus(status))));
             cedula.setPadding(5);
